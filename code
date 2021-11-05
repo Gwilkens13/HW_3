@@ -1,0 +1,151 @@
+#include <iostream>
+using namespace std;
+
+
+class Student {
+
+public:
+
+    int SID = 0;
+
+    float GPA = 0;
+
+    Student* ptr = NULL;
+};
+
+
+class HashTable {
+
+public:
+
+    int Insert(Student* y); // insert a student x based on x.SID 
+                           // return 1 if insertion is successful 
+                           // return -1 if insertion fails (e.g. table full) 
+
+    float Search(int key);  // search for a student with SID=key in the table 
+                            // return GPA if student is found 
+                            // return -1 if student is not found 
+
+    int Remove(int key);   // remove a student with SID=key from the table 
+                           // return 1 if student is found and removed 
+                           // return -1 if student is not found 
+
+    void Enumerate();  // enumerate all numbers, already implemented for you 
+
+private:
+
+    Student* x[5] = { NULL, NULL, NULL, NULL, NULL }; // array of student pointers 
+
+    int link[5] = { -1,-1,-1,-1,-1 }; // link array, all initialized to -1
+
+    int Counter[5] = { 0, 0, 0, 0, 0 };
+
+    int hash(int key); // hash function, already implemented for you 
+
+};
+
+int HashTable::hash(int key) {
+
+    return key % 2;
+}
+
+void HashTable::Enumerate() {
+
+    Student* temp;
+
+    for (int i = 0; i < 5; i++) {
+
+        temp = x[i];
+
+        while (temp != NULL) {       // print the chain
+
+            cout << temp->SID << ' ';
+
+            temp = temp->ptr;
+        }
+
+        cout << link[i] << '\n';  // last number is the corresponding link value, then change line 
+                                  // so, basically, each line for one chain + corresponding link 
+    }
+
+}
+int HashTable::Insert(Student* y) {
+    int index = hash(y->SID);
+    if (x[index] == NULL) {
+        x[index] = y;
+        Counter[index]++;
+        return 1;
+    }
+    int new_SID, temp, size_Table = 5;
+    for (int i = 0; i < 6; i++) {
+        new_SID = hash(y->SID);
+        
+        if (x[new_SID]->SID == 0) { // no collision.
+            x[new_SID] = y;
+            Counter[new_SID]++;
+        }
+        else {
+            temp = (new_SID + 1) % size_Table;
+            while (x[temp]->SID != 0 && temp != new_SID) {
+                temp = (temp + 1) % size_Table;
+            }
+            if (temp == new_SID) {
+                return -1;
+            }
+            else {
+                x[temp] = y;
+                Counter[new_SID]++;
+            }
+        }
+    }
+    return 0;
+
+}
+float HashTable::Search(int key) {
+    int h = hash(key);
+    while (x[h] != NULL && x[h]->SID != key) {
+        h = hash(h + 1);
+    }
+    if (x[h] == NULL)
+        return -1;
+    else
+        return x[h]->GPA;
+}
+
+
+int main()
+{
+    HashTable table;
+
+    for (int i = 0; i < 10; i++) {
+        Student* x = new Student;
+        cin >> x->SID >> x->GPA;
+        x->ptr = NULL;
+        table.Insert(x);
+    }
+
+    int operationChoice, SearchKey, RemoveKey;
+
+    cin >> operationChoice >> SearchKey >> RemoveKey;
+
+    if (operationChoice == 1) {
+
+        table.Enumerate();
+    }
+    else if (operationChoice == 2) {
+
+        cout << table.Search(SearchKey);
+    }
+    else if (operationChoice == 3) {
+
+        table.Remove(RemoveKey);
+        table.Enumerate();
+
+    }
+    else {
+
+        cout << "Enter a valid choice";
+    }
+
+    return 0;
+}
